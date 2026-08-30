@@ -1,0 +1,11 @@
+"use client";
+import { FormEvent, useEffect, useState } from "react";
+import { IceCreamCone, LockKeyhole } from "lucide-react";
+export default function LoginPage() {
+ const [setup,setSetup]=useState<boolean|null>(null), [error,setError]=useState(""), [busy,setBusy]=useState(false);
+ const [username,setUsername]=useState(""),[password,setPassword]=useState(""),[confirm,setConfirm]=useState("");
+ useEffect(()=>{fetch('/api/auth/setup').then(r=>r.json()).then(x=>setSetup(x.setupRequired));},[]);
+ async function submit(e:FormEvent){e.preventDefault();setError("");if(setup&&password!==confirm)return setError("Пароли не совпадают");setBusy(true);const r=await fetch(setup?'/api/auth/setup':'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const body=await r.json();setBusy(false);if(!r.ok)return setError(body.error||'Не удалось выполнить вход');location.href=body.role==='client'?'/portal':'/';}
+ if(setup===null)return <main className="login-shell">Загрузка…</main>;
+ return <main className="login-shell"><section className="login-card"><div className="login-logo"><IceCreamCone/></div><p className="eyebrow">ICECRM</p><h1>{setup?'Первичная настройка':'Вход в систему'}</h1><p className="muted">{setup?'Создайте защищённую учётную запись администратора. Это потребуется только один раз.':'Используйте учётную запись администратора или клиента.'}</p><form onSubmit={submit} className="space-y-4"><label>Логин<input className="input mt-1" autoComplete="username" required minLength={3} value={username} onChange={e=>setUsername(e.target.value)} /></label><label>Пароль<input className="input mt-1" type="password" autoComplete={setup?'new-password':'current-password'} required minLength={12} value={password} onChange={e=>setPassword(e.target.value)} /></label>{setup&&<label>Повторите пароль<input className="input mt-1" type="password" autoComplete="new-password" required minLength={12} value={confirm} onChange={e=>setConfirm(e.target.value)} /></label>}{error&&<p className="form-error">{error}</p>}<button disabled={busy} className="btn btn-primary w-full justify-center"><LockKeyhole className="h-4 w-4"/>{busy?'Подождите…':setup?'Создать администратора':'Войти'}</button></form></section></main>;
+}
