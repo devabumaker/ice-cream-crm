@@ -1,0 +1,18 @@
+services:
+  ice-cream-crm:
+    build: .
+    container_name: ice-cream-crm
+    restart: unless-stopped
+    environment:
+      VIRTUAL_PORT: 3000
+    volumes:
+      - ice_cream_crm_data:/app/data
+    networks:
+      - global-proxy
+
+networks:
+  global-proxy:
+    external: true
+
+volumes:
+  ice_cream_crm_data:
